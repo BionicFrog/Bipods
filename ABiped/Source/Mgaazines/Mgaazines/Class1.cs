@@ -215,39 +215,58 @@ namespace Mgaazines
 		// Token: 0x06000120 RID: 288 RVA: 0x0000DD34 File Offset: 0x0000BF34
 		public override void VerbTickCE()
 		{
-			if (daPawn.pather.Moving)
-			{
-				Myself.TryGetComp<Biped2>().BipodSetUp = false;
-			}
 
-			if (daPawn.Drafted)
+
+			if (Myself.ParentHolder != Myself.Map)
 			{
-				if (!daPawn.pather.Moving)
+
+
+				if (CasterPawn != null)
 				{
-					if (!daPawn.pather.MovingNow)
+
+
+					if (daPawn != null)
 					{
-						ThinkNode jobGiver = null;
-						Pawn_JobTracker jobs = this.CasterPawn.jobs;
-						Job job = this.TryMakeReloadJob();
-						Job newJob = job;
-						JobCondition lastJobEndCondition = JobCondition.InterruptForced;
-						Job curJob = this.CasterPawn.CurJob;
-						if (jobs.curJob != job)
+						if (daPawn.pather.Moving)
 						{
-							if (Myself.TryGetComp<Biped2>().BipodSetUp != true)
-							{
-								jobs.StartJob(newJob, lastJobEndCondition, jobGiver, ((curJob != null) ? curJob.def : null) != job.def, true, null, null, false, false);
-							}
-							
+							Myself.TryGetComp<Biped2>().BipodSetUp = false;
 						}
-						
-						
+
+						if (daPawn.Drafted)
+						{
+							if (!daPawn.pather.Moving)
+							{
+								if (!daPawn.pather.MovingNow)
+								{
+									ThinkNode jobGiver = null;
+									Pawn_JobTracker jobs = this.CasterPawn.jobs;
+									Job job = this.TryMakeReloadJob();
+									Job newJob = job;
+									JobCondition lastJobEndCondition = JobCondition.InterruptForced;
+									Job curJob = this.CasterPawn.CurJob;
+									if (jobs.curJob != job)
+									{
+										if (Myself.TryGetComp<Biped2>().BipodSetUp != true)
+										{
+											jobs.StartJob(newJob, lastJobEndCondition, jobGiver, ((curJob != null) ? curJob.def : null) != job.def, true, null, null, false, false);
+										}
+
+									}
+
+
+								}
+
+
+							}
+
+						}
 					}
-					
 
 				}
-				
 			}
+			
+			
+			
 			
 			bool isAiming = this._isAiming;
 			if (isAiming)
@@ -318,7 +337,7 @@ namespace Mgaazines
 			{
 				if (Myself.TryGetComp<Biped2>().BipodSetUp)
 				{
-					this.VerbPropsCE.defaultCooldownTime = this.VerbPropsCE.defaultCooldownTime / 2;
+					
 					this.VerbPropsCE.warmupTime = this.VerbPropsCE.warmupTime / 2;
 				}
 			}
@@ -491,10 +510,15 @@ namespace Mgaazines
 		protected override IEnumerable<Toil> MakeNewToils()
 		{
 			Toil toil = Toils_General.Wait(240);
+			if (Bipod == null)
+			{
+				yield return null;
+			}
 
 			toil.AddFinishAction(delegate
 			{
 				Bipod.BipodSetUp = true;
+				
 			});
 			yield return toil;
 

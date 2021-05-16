@@ -58,6 +58,7 @@
       </li>
       <li Class="Mgaazines.BipedProps">
         <setup>Setup</setup>
+        <SetUpTime>120</SetUpTime>
       </li>
     </comps>
     <recipeMaker>

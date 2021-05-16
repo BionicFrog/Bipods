@@ -25,6 +25,8 @@ namespace Mgaazines
 
 		public BipedProps Props => (BipedProps)this.props;
 		public bool BipodSetUp;
+		public bool shoe;
+		public int SetUpTime => Props.SetUpTime;
 		
 		public Thing Myself
 		{
@@ -54,8 +56,31 @@ namespace Mgaazines
 				return false;
 			}
 		}
+		public override void CompTick()
+		{
+			if (!shoe)
+			{
+				shoe = true;
+			}
+		}
 
 
+
+	}
+	public class BipedProps : CompProperties
+	{
+
+		public JobDef setup;
+		public int SetUpTime;
+		public BipedProps()
+		{
+			this.compClass = typeof(Biped2);
+		}
+
+		public BipedProps(Type compClass) : base(compClass)
+		{
+			this.compClass = compClass;
+		}
 
 	}
 	public class Biped : Verb_LaunchProjectileCE
@@ -216,54 +241,57 @@ namespace Mgaazines
 		public override void VerbTickCE()
 		{
 
-
-			if (Myself.ParentHolder != Myself.Map)
+			if (!Myself.TryGetComp<Biped2>().shoe)
 			{
-
-
-				if (CasterPawn != null)
+				if (Myself.ParentHolder != Myself.Map)
 				{
 
 
-					if (daPawn != null)
+					if (CasterPawn != null)
 					{
-						if (daPawn.pather.Moving)
-						{
-							Myself.TryGetComp<Biped2>().BipodSetUp = false;
-						}
 
-						if (daPawn.Drafted)
+
+						if (daPawn != null)
 						{
-							if (!daPawn.pather.Moving)
+							if (daPawn.pather.Moving)
 							{
-								if (!daPawn.pather.MovingNow)
+								Myself.TryGetComp<Biped2>().BipodSetUp = false;
+							}
+
+							if (daPawn.Drafted)
+							{
+								if (!daPawn.pather.Moving)
 								{
-									ThinkNode jobGiver = null;
-									Pawn_JobTracker jobs = this.CasterPawn.jobs;
-									Job job = this.TryMakeReloadJob();
-									Job newJob = job;
-									JobCondition lastJobEndCondition = JobCondition.InterruptForced;
-									Job curJob = this.CasterPawn.CurJob;
-									if (jobs.curJob != job)
+									if (!daPawn.pather.MovingNow)
 									{
-										if (Myself.TryGetComp<Biped2>().BipodSetUp != true)
+										ThinkNode jobGiver = null;
+										Pawn_JobTracker jobs = this.CasterPawn.jobs;
+										Job job = this.TryMakeReloadJob();
+										Job newJob = job;
+										JobCondition lastJobEndCondition = JobCondition.InterruptForced;
+										Job curJob = this.CasterPawn.CurJob;
+										if (jobs.curJob != job)
 										{
-											jobs.StartJob(newJob, lastJobEndCondition, jobGiver, ((curJob != null) ? curJob.def : null) != job.def, true, null, null, false, false);
+											if (Myself.TryGetComp<Biped2>().BipodSetUp != true)
+											{
+												jobs.StartJob(newJob, lastJobEndCondition, jobGiver, ((curJob != null) ? curJob.def : null) != job.def, true, null, null, false, false);
+											}
+
 										}
+
 
 									}
 
 
 								}
 
-
 							}
-
 						}
-					}
 
+					}
 				}
 			}
+			
 			
 			
 			
@@ -469,21 +497,7 @@ namespace Mgaazines
 
 	}
 
-	public class BipedProps : CompProperties
-	{
-
-		public JobDef setup;
-		public BipedProps()
-		{
-			this.compClass = typeof(Biped2);
-		}
-
-		public BipedProps(Type compClass) : base(compClass)
-		{
-			this.compClass = compClass;
-		}
-
-	}
+	
 	public class SetUpBipod : JobDriver
 	{
 		private ThingWithComps weapon
@@ -509,7 +523,14 @@ namespace Mgaazines
 		}
 		protected override IEnumerable<Toil> MakeNewToils()
 		{
-			Toil toil = Toils_General.Wait(240);
+			Toil toil = Toils_General.Wait(Bipod.SetUpTime);
+			if (Bipod.SetUpTime == 0)
+			{
+				toil = Toils_General.Wait(240);
+			}
+			
+
+
 			if (Bipod == null)
 			{
 				yield return null;
@@ -519,6 +540,7 @@ namespace Mgaazines
 			{
 				Bipod.BipodSetUp = true;
 				
+
 			});
 			yield return toil;
 

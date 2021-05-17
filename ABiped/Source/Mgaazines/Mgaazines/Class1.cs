@@ -63,8 +63,16 @@ namespace Mgaazines
 				shoe = true;
 			}
 		}
-
-
+		public override void PostDeSpawn(Map map)
+		{
+			Log.Error("Omaba");
+			shoe = false;
+		}
+		public override void Notify_Equipped(Pawn pawn)
+		{
+			Log.Error("Omaba2");
+			shoe = false;
+		}
 
 	}
 	public class BipedProps : CompProperties

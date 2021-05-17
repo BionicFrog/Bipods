@@ -35,6 +35,11 @@ namespace Mgaazines
 				return this.parent;
 			}
 		}
+		public override void Initialize(CompProperties props)
+		{
+			Biped gun = ThingMaker.MakeThing(this.parent.def).TryGetComp<CompEquippable>().PrimaryVerb as Biped;
+			RandomShitidkanymore = gun.VerbPropsCE.warmupTime;
+		}
 		public Pawn daPawn
 		{
 			get
@@ -70,10 +75,34 @@ namespace Mgaazines
 		}
 		public override void Notify_Equipped(Pawn pawn)
 		{
+
+			Biped gun = ThingMaker.MakeThing(this.parent.def).TryGetComp<CompEquippable>().PrimaryVerb as Biped;
+			Log.Error(gun.ToString());
+			Log.Error(gun.VerbPropsCE.ToString());
+			Log.Error(gun.VerbPropsCE.warmupTime.ToString());
+			RandomShitidkanymore = gun.VerbPropsCE.warmupTime;
+			Log.Error(RandomShitidkanymore.ToString());
 			Log.Error("Omaba2");
 			shoe = false;
 		}
+		public Biped daPawnR
+		{
+			get
+			{
+				return this.CompEquippableR.PrimaryVerb as Biped;
+			}
+		}
+		public CompEquippable CompEquippableR
+		{
+			get
+			{
+				return this.parent.GetComp<CompEquippable>();
+			}
+		}
 
+		public float RandomShitidkanymore;
+	
+		
 	}
 	public class BipedProps : CompProperties
 	{
@@ -109,7 +138,22 @@ namespace Mgaazines
 					bool flag3 = base.CompFireModes.CurrentFireMode == FireMode.BurstFire && base.CompFireModes.Props.aimedBurstShotCount > 0;
 					if (flag3)
 					{
-						return base.CompFireModes.Props.aimedBurstShotCount;
+						if (Myself.TryGetComp<Biped2>().BipodSetUp)
+						{
+							return base.CompFireModes.Props.aimedBurstShotCount;
+						}
+						else
+						{
+							if (base.compFireModes.Props.aimedBurstShotCount > 1)
+							{
+								return base.compFireModes.Props.aimedBurstShotCount - (Rand.Range(0, 2));
+							}
+							else
+							{
+								return base.compFireModes.Props.aimedBurstShotCount - (Rand.Range(0, 1));
+							}
+
+						}
 					}
 				}
 				return base.VerbPropsCE.burstShotCount;
@@ -156,8 +200,7 @@ namespace Mgaazines
 			}
 		}
 
-		// Token: 0x17000041 RID: 65
-		// (get) Token: 0x0600011D RID: 285 RVA: 0x0000DB0C File Offset: 0x0000BD0C
+	
 		protected override float SwayAmplitude
 		{
 			get
@@ -185,8 +228,7 @@ namespace Mgaazines
 			}
 		}
 
-		// Token: 0x17000042 RID: 66
-		// (get) Token: 0x0600011E RID: 286 RVA: 0x0000DB74 File Offset: 0x0000BD74
+		
 		private bool IsSuppressed
 		{
 			get
@@ -207,9 +249,10 @@ namespace Mgaazines
 			}
 		}
 
-		// Token: 0x0600011F RID: 287 RVA: 0x0000DBBC File Offset: 0x0000BDBC
+		
 		public override void WarmupComplete()
 		{
+			
 			float lengthHorizontal = (this.currentTarget.Cell - this.caster.Position).LengthHorizontal;
 			int num = (int)Mathf.Lerp(30f, 240f, lengthHorizontal / 100f);
 			bool flag = this.ShouldAim && !this._isAiming;
@@ -245,7 +288,7 @@ namespace Mgaazines
 			}
 		}
 
-		// Token: 0x06000120 RID: 288 RVA: 0x0000DD34 File Offset: 0x0000BF34
+		
 		public override void VerbTickCE()
 		{
 
@@ -369,12 +412,22 @@ namespace Mgaazines
 		
 		protected override bool TryCastShot()
 		{
+			
 			if (Myself.TryGetComp<Biped2>() != null)
 			{
+				float inteneger = this.VerbPropsCE.warmupTime;
 				if (Myself.TryGetComp<Biped2>().BipodSetUp)
 				{
 					
-					this.VerbPropsCE.warmupTime = this.VerbPropsCE.warmupTime / 2;
+					
+					this.VerbPropsCE.warmupTime = Myself.TryGetComp<Biped2>().RandomShitidkanymore / 2;
+					Log.Error(this.VerbPropsCE.warmupTime.ToString());
+					
+				}
+				else
+				{
+					return false;
+					//this.VerbPropsCE.warmupTime = Myself.TryGetComp<Biped2>().RandomShitidkanymore;
 				}
 			}
 			else
@@ -446,22 +499,22 @@ namespace Mgaazines
 			return result;
 		}
 
-		// Token: 0x040000F5 RID: 245
+		
 		private const int AimTicksMin = 30;
 
-		// Token: 0x040000F6 RID: 246
+		
 		private const int AimTicksMax = 240;
 
-		// Token: 0x040000F7 RID: 247
+	
 		private const float PawnXp = 20f;
 
-		// Token: 0x040000F8 RID: 248
+		
 		private const float HostileXp = 170f;
 
-		// Token: 0x040000F9 RID: 249
+	
 		private const float SuppressionSwayFactor = 1.5f;
 
-		// Token: 0x040000FA RID: 250
+		
 		private bool _isAiming;
 	
 

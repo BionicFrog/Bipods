@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace Mgaazines
 {
-	public class Biped2 : ThingComp
+	public class Biped2 : CompRangedGizmoGiver
 	{
 
 
@@ -26,8 +26,9 @@ namespace Mgaazines
 		public BipedProps Props => (BipedProps)this.props;
 		public bool BipodSetUp;
 		public bool shoe;
-		public int SetUpTime => Props.SetUpTime;
-		
+		public bool ShouldSetUpBipod;
+		public bool ShouldSetUpBipodGizmoBool = false;
+		public float DaTime = 2f;
 		public Thing Myself
 		{
 			get
@@ -35,17 +36,32 @@ namespace Mgaazines
 				return this.parent;
 			}
 		}
-		public override void Initialize(CompProperties props)
-		{
-			Biped gun = ThingMaker.MakeThing(this.parent.def).TryGetComp<CompEquippable>().PrimaryVerb as Biped;
-			RandomShitidkanymore = gun.VerbPropsCE.warmupTime;
-		}
 		public Pawn daPawn
 		{
 			get
 			{
 				return this.CompEquippable.PrimaryVerb.CasterPawn;
 			}
+		}
+		public override void CompTick()
+		{
+			if (pawnHolding.Faction.def != FactionDefOf.PlayerColony)
+			{
+				if (pawnHolding.Faction.def != FactionDefOf.PlayerTribe)
+				{
+					ShouldSetUpBipodGizmoBool = true;
+				}
+			}
+			if (!shoe)
+			{
+				shoe = true;
+			}
+		}
+		public override void PostDeSpawn(Map map)
+		{
+			Log.Error("Omaba");
+			ShouldSetUpBipodGizmoBool = false;
+			shoe = false;
 		}
 		public CompEquippable CompEquippable
 		{
@@ -61,64 +77,47 @@ namespace Mgaazines
 				return false;
 			}
 		}
-		public override void CompTick()
-		{
-			if (!shoe)
-			{
-				shoe = true;
-			}
-		}
-		public override void PostDeSpawn(Map map)
-		{
-			Log.Error("Omaba");
-			shoe = false;
-		}
 		public override void Notify_Equipped(Pawn pawn)
 		{
 
-			Biped gun = ThingMaker.MakeThing(this.parent.def).TryGetComp<CompEquippable>().PrimaryVerb as Biped;
-			Log.Error(gun.ToString());
-			Log.Error(gun.VerbPropsCE.ToString());
-			Log.Error(gun.VerbPropsCE.warmupTime.ToString());
-			RandomShitidkanymore = gun.VerbPropsCE.warmupTime;
-			Log.Error(RandomShitidkanymore.ToString());
-			Log.Error("Omaba2");
+			
 			shoe = false;
 		}
-		public Biped daPawnR
-		{
-			get
-			{
-				return this.CompEquippableR.PrimaryVerb as Biped;
-			}
-		}
-		public CompEquippable CompEquippableR
-		{
-			get
-			{
-				return this.parent.GetComp<CompEquippable>();
-			}
-		}
-
-		public float RandomShitidkanymore;
+		//public Biped daPawnR
+		//{
+		//get
+		//{
+		//return this.CompEquippableR.PrimaryVerb as Biped;
+		//}
+		//}
 	
-		
-	}
-	public class BipedProps : CompProperties
-	{
-
-		public JobDef setup;
-		public int SetUpTime;
-		public BipedProps()
+		public override IEnumerable<Gizmo> CompGetGizmosExtra()
 		{
-			this.compClass = typeof(Biped2);
+			yield return new GizmoBipodSetupManual(this)
+			{
+				
+			};
+			
+			yield break;
 		}
-
-		public BipedProps(Type compClass) : base(compClass)
+		public Pawn_InventoryTracker pwaninve;
+		public Pawn pawnHolding;
+		public void GizmoStuff()
 		{
-			this.compClass = compClass;
+			pawnHolding = pwaninve.pawn;
+			pwaninve = this.ParentHolder as Pawn_InventoryTracker;
+			ThinkNode jobGiver = null;
+			Pawn_JobTracker jobs = pawnHolding.jobs;
+			Job job = this.TryMakeBipodJobComp();
+			Job newJob = job;
+			JobCondition lastJobEndCondition = JobCondition.InterruptForced;
+			Job curJob = pawnHolding.CurJob;
+			jobs.StartJob(newJob, lastJobEndCondition, jobGiver, ((curJob != null) ? curJob.def : null) != job.def, true, null, null, false, false);
 		}
-
+		public Job TryMakeBipodJobComp()
+		{
+			return new Job(Myself.TryGetComp<Biped2>().yalla, pawnHolding);
+		}
 	}
 	public class Biped : Verb_LaunchProjectileCE
 	{
@@ -138,22 +137,7 @@ namespace Mgaazines
 					bool flag3 = base.CompFireModes.CurrentFireMode == FireMode.BurstFire && base.CompFireModes.Props.aimedBurstShotCount > 0;
 					if (flag3)
 					{
-						if (Myself.TryGetComp<Biped2>().BipodSetUp)
-						{
-							return base.CompFireModes.Props.aimedBurstShotCount;
-						}
-						else
-						{
-							if (base.compFireModes.Props.aimedBurstShotCount > 1)
-							{
-								return base.compFireModes.Props.aimedBurstShotCount - (Rand.Range(0, 2));
-							}
-							else
-							{
-								return base.compFireModes.Props.aimedBurstShotCount - (Rand.Range(0, 1));
-							}
-
-						}
+						return base.CompFireModes.Props.aimedBurstShotCount;
 					}
 				}
 				return base.VerbPropsCE.burstShotCount;
@@ -200,7 +184,8 @@ namespace Mgaazines
 			}
 		}
 
-	
+		// Token: 0x17000041 RID: 65
+		// (get) Token: 0x0600011D RID: 285 RVA: 0x0000DB0C File Offset: 0x0000BD0C
 		protected override float SwayAmplitude
 		{
 			get
@@ -228,7 +213,8 @@ namespace Mgaazines
 			}
 		}
 
-		
+		// Token: 0x17000042 RID: 66
+		// (get) Token: 0x0600011E RID: 286 RVA: 0x0000DB74 File Offset: 0x0000BD74
 		private bool IsSuppressed
 		{
 			get
@@ -249,10 +235,9 @@ namespace Mgaazines
 			}
 		}
 
-		
+		// Token: 0x0600011F RID: 287 RVA: 0x0000DBBC File Offset: 0x0000BDBC
 		public override void WarmupComplete()
 		{
-			
 			float lengthHorizontal = (this.currentTarget.Cell - this.caster.Position).LengthHorizontal;
 			int num = (int)Mathf.Lerp(30f, 240f, lengthHorizontal / 100f);
 			bool flag = this.ShouldAim && !this._isAiming;
@@ -288,10 +273,18 @@ namespace Mgaazines
 			}
 		}
 
-		
-		public override void VerbTickCE()
+		public Biped2 bidopcomp
 		{
-
+			get
+			{
+				return Myself.TryGetComp<Biped2>();
+			}
+		}
+		
+	public override void VerbTickCE()
+		{
+			
+			
 			if (!Myself.TryGetComp<Biped2>().shoe)
 			{
 				if (Myself.ParentHolder != Myself.Map)
@@ -311,30 +304,34 @@ namespace Mgaazines
 
 							if (daPawn.Drafted)
 							{
-								if (!daPawn.pather.Moving)
+								if (Myself.TryGetComp<Biped2>().ShouldSetUpBipodGizmoBool) 
 								{
-									if (!daPawn.pather.MovingNow)
+									if (!daPawn.pather.Moving)
 									{
-										ThinkNode jobGiver = null;
-										Pawn_JobTracker jobs = this.CasterPawn.jobs;
-										Job job = this.TryMakeReloadJob();
-										Job newJob = job;
-										JobCondition lastJobEndCondition = JobCondition.InterruptForced;
-										Job curJob = this.CasterPawn.CurJob;
-										if (jobs.curJob != job)
+										if (!daPawn.pather.MovingNow)
 										{
-											if (Myself.TryGetComp<Biped2>().BipodSetUp != true)
+											ThinkNode jobGiver = null;
+											Pawn_JobTracker jobs = this.CasterPawn.jobs;
+											Job job = this.TryMakeBipodJob();
+											Job newJob = job;
+											JobCondition lastJobEndCondition = JobCondition.InterruptForced;
+											Job curJob = this.CasterPawn.CurJob;
+											if (jobs.curJob != job)
 											{
-												jobs.StartJob(newJob, lastJobEndCondition, jobGiver, ((curJob != null) ? curJob.def : null) != job.def, true, null, null, false, false);
+												if (Myself.TryGetComp<Biped2>().BipodSetUp != true)
+												{
+													jobs.StartJob(newJob, lastJobEndCondition, jobGiver, ((curJob != null) ? curJob.def : null) != job.def, true, null, null, false, false);
+												}
+
 											}
+
 
 										}
 
 
 									}
-
-
 								}
+								
 
 							}
 						}
@@ -342,11 +339,10 @@ namespace Mgaazines
 					}
 				}
 			}
-			
-			
-			
-			
-			
+
+
+
+
 			bool isAiming = this._isAiming;
 			if (isAiming)
 			{
@@ -408,26 +404,30 @@ namespace Mgaazines
 			bool flag = base.ShooterPawn != null && !base.ShooterPawn.health.capacities.CapableOf(PawnCapacityDefOf.Sight);
 			return !flag && base.CanHitTargetFrom(root, targ);
 		}
+		public float NeededFloat;
 
-		
+
+		public int yes;
 		protected override bool TryCastShot()
 		{
 			
+			if (yes != 1)
+			{
+				NeededFloat = this.VerbPropsCE.warmupTime;
+				yes = 1;
+			}
 			if (Myself.TryGetComp<Biped2>() != null)
 			{
-				float inteneger = this.VerbPropsCE.warmupTime;
 				if (Myself.TryGetComp<Biped2>().BipodSetUp)
 				{
-					
-					
-					this.VerbPropsCE.warmupTime = Myself.TryGetComp<Biped2>().RandomShitidkanymore / 2;
+					Log.Error(NeededFloat.ToString());
+					this.VerbPropsCE.warmupTime = NeededFloat / 2;
 					Log.Error(this.VerbPropsCE.warmupTime.ToString());
-					
 				}
 				else
 				{
-					return false;
-					//this.VerbPropsCE.warmupTime = Myself.TryGetComp<Biped2>().RandomShitidkanymore;
+					this.VerbPropsCE.warmupTime = NeededFloat;
+					Log.Error(this.VerbPropsCE.warmupTime.ToString());
 				}
 			}
 			else
@@ -499,22 +499,22 @@ namespace Mgaazines
 			return result;
 		}
 
-		
+		// Token: 0x040000F5 RID: 245
 		private const int AimTicksMin = 30;
 
-		
+		// Token: 0x040000F6 RID: 246
 		private const int AimTicksMax = 240;
 
-	
+		// Token: 0x040000F7 RID: 247
 		private const float PawnXp = 20f;
 
-		
+		// Token: 0x040000F8 RID: 248
 		private const float HostileXp = 170f;
 
-	
+		// Token: 0x040000F9 RID: 249
 		private const float SuppressionSwayFactor = 1.5f;
 
-		
+		// Token: 0x040000FA RID: 250
 		private bool _isAiming;
 	
 
@@ -525,7 +525,7 @@ namespace Mgaazines
 		
 		
 		
-		public Job TryMakeReloadJob()
+		public Job TryMakeBipodJob()
 		{
 			return new Job(Myself.TryGetComp<Biped2>().yalla, Myself);
 		}
@@ -558,7 +558,21 @@ namespace Mgaazines
 
 	}
 
-	
+	public class BipedProps : CompProperties
+	{
+
+		public JobDef setup;
+		public BipedProps()
+		{
+			this.compClass = typeof(Biped2);
+		}
+
+		public BipedProps(Type compClass) : base(compClass)
+		{
+			this.compClass = compClass;
+		}
+
+	}
 	public class SetUpBipod : JobDriver
 	{
 		private ThingWithComps weapon
@@ -584,14 +598,7 @@ namespace Mgaazines
 		}
 		protected override IEnumerable<Toil> MakeNewToils()
 		{
-			Toil toil = Toils_General.Wait(Bipod.SetUpTime);
-			if (Bipod.SetUpTime == 0)
-			{
-				toil = Toils_General.Wait(240);
-			}
-			
-
-
+			Toil toil = Toils_General.Wait(240);
 			if (Bipod == null)
 			{
 				yield return null;
@@ -601,7 +608,6 @@ namespace Mgaazines
 			{
 				Bipod.BipodSetUp = true;
 				
-
 			});
 			yield return toil;
 

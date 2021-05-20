@@ -18,7 +18,7 @@ namespace Mgaazines
 		public GizmoBipodSetupManual(Biped2 BipodComp)
 		{
 			this.bipod = BipodComp;
-			bool flag = this.bipod.BipodSetUp;
+			bool flag = this.bipod.ShouldSetUpBipodGizmoBool;
 			if (flag)
 			{
 				this.defaultLabel = this.labelStart;

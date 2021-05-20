@@ -13,6 +13,25 @@ using UnityEngine;
 
 namespace Mgaazines
 {
+	public class BipedProps : CompProperties
+	{
+
+		public JobDef setup;
+		public int bipodBurst;
+		public int bipodAuto;
+		
+
+		public BipedProps()
+		{
+			this.compClass = typeof(Biped2);
+		}
+
+		public BipedProps(Type compClass) : base(compClass)
+		{
+			this.compClass = compClass;
+		}
+
+	}
 	public class Biped2 : CompRangedGizmoGiver
 	{
 
@@ -45,17 +64,22 @@ namespace Mgaazines
 		}
 		public override void CompTick()
 		{
-			if (pawnHolding.Faction.def != FactionDefOf.PlayerColony)
+			if (pawnHolding != null)
 			{
-				if (pawnHolding.Faction.def != FactionDefOf.PlayerTribe)
+				if (pawnHolding.Faction.def != FactionDefOf.PlayerColony)
 				{
-					ShouldSetUpBipodGizmoBool = true;
+					if (pawnHolding.Faction.def != FactionDefOf.PlayerTribe)
+					{
+						ShouldSetUpBipodGizmoBool = true;
+					}
+				}
+				if (!shoe)
+				{
+					shoe = true;
+
 				}
 			}
-			if (!shoe)
-			{
-				shoe = true;
-			}
+			
 		}
 		public override void PostDeSpawn(Map map)
 		{
@@ -77,10 +101,12 @@ namespace Mgaazines
 				return false;
 			}
 		}
+		public float rangechange;
 		public override void Notify_Equipped(Pawn pawn)
 		{
 
-			
+			Biped bipedo = CompEquippable.PrimaryVerb as Biped;
+			rangechange = bipedo.VerbPropsCE.range;
 			shoe = false;
 		}
 		//public Biped daPawnR
@@ -137,13 +163,51 @@ namespace Mgaazines
 					bool flag3 = base.CompFireModes.CurrentFireMode == FireMode.BurstFire && base.CompFireModes.Props.aimedBurstShotCount > 0;
 					if (flag3)
 					{
-						return base.CompFireModes.Props.aimedBurstShotCount;
+						if (BipodComp.BipodSetUp)
+						{
+							if (BipodComp.Props.bipodBurst != 0)
+						
+							{ return base.VerbPropsCE.burstShotCount + BipodComp.Props.bipodBurst; }
+							else
+							{
+								return base.VerbPropsCE.burstShotCount;
+							}
+
+						}
+						else
+						{
+							return base.CompFireModes.Props.aimedBurstShotCount;
+						}
+						
 					}
 				}
-				return base.VerbPropsCE.burstShotCount;
+				if (BipodComp.BipodSetUp)
+				{
+					if (BipodComp.Props.bipodAuto != 0)
+					{
+						return BipodComp.Props.bipodAuto + base.VerbPropsCE.burstShotCount;
+					}
+					else
+					{
+						return base.VerbPropsCE.burstShotCount;
+					}
+
+				}
+				else
+				{
+					return base.VerbPropsCE.burstShotCount;
+				}
+				
 			}
 		}
-
+		public Biped2 BipodComp
+		{
+			get
+			{
+				return this.EquipmentSource.TryGetComp<Biped2>();
+			}
+			
+		}
 		// Token: 0x17000040 RID: 64
 		// (get) Token: 0x0600011C RID: 284 RVA: 0x0000DA64 File Offset: 0x0000BC64
 		private bool ShouldAim
@@ -238,6 +302,7 @@ namespace Mgaazines
 		// Token: 0x0600011F RID: 287 RVA: 0x0000DBBC File Offset: 0x0000BDBC
 		public override void WarmupComplete()
 		{
+			Log.Error(ShotsPerBurst.ToString());
 			float lengthHorizontal = (this.currentTarget.Cell - this.caster.Position).LengthHorizontal;
 			int num = (int)Mathf.Lerp(30f, 240f, lengthHorizontal / 100f);
 			bool flag = this.ShouldAim && !this._isAiming;
@@ -558,21 +623,7 @@ namespace Mgaazines
 
 	}
 
-	public class BipedProps : CompProperties
-	{
-
-		public JobDef setup;
-		public BipedProps()
-		{
-			this.compClass = typeof(Biped2);
-		}
-
-		public BipedProps(Type compClass) : base(compClass)
-		{
-			this.compClass = compClass;
-		}
-
-	}
+	
 	public class SetUpBipod : JobDriver
 	{
 		private ThingWithComps weapon

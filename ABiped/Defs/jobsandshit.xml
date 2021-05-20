@@ -58,6 +58,9 @@
       </li>
       <li Class="Mgaazines.BipedProps">
         <setup>Setup</setup>
+        <bipodBurst>1</bipodBurst>
+        <bipodAuto>2</bipodAuto>
+        <AdditRange>20</AdditRange>
       </li>
     </comps>
     <recipeMaker>

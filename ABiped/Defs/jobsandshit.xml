@@ -60,7 +60,8 @@
         <setup>Setup</setup>
         <bipodBurst>1</bipodBurst>
         <bipodAuto>2</bipodAuto>
-        <AdditRange>20</AdditRange>
+        <Recoilchange>1</Recoilchange>
+        <BipodSetUpTime>200</BipodSetUpTime>
       </li>
     </comps>
     <recipeMaker>

@@ -18,7 +18,10 @@ namespace Mgaazines
 
 		public JobDef setup;
 		public int bipodBurst;
+		public int BipodSetUpTime;
 		public int bipodAuto;
+		//public float SwayChange;
+		public float Recoilchange;
 		
 
 		public BipedProps()
@@ -37,7 +40,7 @@ namespace Mgaazines
 
 
 
-
+		public float InitRecoil;
 
 
 		public JobDef yalla => Props.setup;
@@ -71,6 +74,8 @@ namespace Mgaazines
 					if (pawnHolding.Faction.def != FactionDefOf.PlayerTribe)
 					{
 						ShouldSetUpBipodGizmoBool = true;
+						
+						
 					}
 				}
 				if (!shoe)
@@ -107,6 +112,8 @@ namespace Mgaazines
 
 			Biped bipedo = CompEquippable.PrimaryVerb as Biped;
 			rangechange = bipedo.VerbPropsCE.range;
+			InitRecoil = bipedo.VerbPropsCE.recoilAmount;
+
 			shoe = false;
 		}
 		//public Biped daPawnR
@@ -349,7 +356,79 @@ namespace Mgaazines
 	public override void VerbTickCE()
 		{
 			
+			//if (CasterPawn != null)
+			//{
+				//List<IntVec3> cheese = CasterPawn.CellsAdjacent8WayAndInside().ToList();
+				//if (cheese != null)
+				//{
+					//if (this.CasterPawn.jobs.posture != PawnPosture.Standing)
+					//{
+						//this.CasterPawn.jobs.posture = PawnPosture.Standing;
+					//}
+					//foreach (IntVec3 element in cheese)
+					//{
+						//if (element != null)
+						//{
+							
+							//if (Verse.GridsUtility.GetCover(element, CasterPawn.Map) != null)
+							//{
+								//Building ting = Verse.GridsUtility.GetCover(element, CasterPawn.Map) as Building;
+								//float flat = ting.def.fillPercent;
+								//if (this.CasterPawn.jobs.posture != PawnPosture.Standing)
+								//{
+									//this.CasterPawn.jobs.posture = PawnPosture.Standing;
+								//}
+								
+								//Log.Error(Verse.GridsUtility.GetCover(element, CasterPawn.Map).ToString());
+								
+							//}
+							//else
+							//{
+								//if (!CasterPawn.pather.MovingNow)
+								//{
+									//if (BipodComp.BipodSetUp)
+									//{
+										
+										//this.CasterPawn.jobs.posture = PawnPosture.LayingOnGroundNormal;
+
+
+
+										
+									//}
+									
+									
+								//}
+								
+							//}
+							
+						//}
+						
+					//}
+				//}
+				//else
+				//{
+					//Log.Error("cheesent");
+				//}
+				
+			//}
 			
+			
+			//CasterPawn.cell
+			if (BipodComp.Props.Recoilchange == this.VerbPropsCE.recoilAmount)
+			{
+				Log.Error(this.VerbPropsCE.recoilAmount.ToString());
+			}
+			if (CasterPawn != null)
+			{
+				if (BipodComp.BipodSetUp)
+				{
+					this.VerbPropsCE.recoilAmount = BipodComp.Props.Recoilchange;
+				}
+				else
+				{
+					this.VerbPropsCE.recoilAmount = BipodComp.InitRecoil;
+				}
+			}
 			if (!Myself.TryGetComp<Biped2>().shoe)
 			{
 				if (Myself.ParentHolder != Myself.Map)
@@ -649,7 +728,15 @@ namespace Mgaazines
 		}
 		protected override IEnumerable<Toil> MakeNewToils()
 		{
-			Toil toil = Toils_General.Wait(240);
+			Toil toil = Toils_General.Wait(0);
+			if (Bipod.Props.BipodSetUpTime != 0)
+			{
+				toil = Toils_General.Wait(Bipod.Props.BipodSetUpTime);
+			}
+			if (Bipod.Props.BipodSetUpTime == 0)
+			{
+				toil = Toils_General.Wait(240);
+			}
 			if (Bipod == null)
 			{
 				yield return null;

@@ -53,10 +53,10 @@ namespace Mgaazines
 		}
 
 		
-		public static Texture2D stopIcon = ContentFinder<Texture2D>.Get("UI/Commands/PodEject", true);
+		public static Texture2D stopIcon = ContentFinder<Texture2D>.Get("Tymon/Bipod/closed_bipod", true);
 
 		
-		public static Texture2D startIcon = ContentFinder<Texture2D>.Get("UI/Designators/Cancel", true);
+		public static Texture2D startIcon = ContentFinder<Texture2D>.Get("Tymon/Bipod/open_bipod", true);
 
 		
 		
@@ -70,10 +70,10 @@ namespace Mgaazines
 		public string descriptionStart = "Placeholder";
 
 		
-		public string labelStop = "obama";
+		public string labelStop = "Close bipod";
 
 	
-		public string descriptionStop = "obama";
+		public string descriptionStop = "Placeholder";
 	}
 	public class GizmoSetUpManually : Verb
 	{
